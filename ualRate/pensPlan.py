@@ -72,6 +72,7 @@ class pensPlan(object):
         contribution = self.pr * normalCost
         self.fund.addPremiums(contribution)
         self.payGo = round(self.fund.payBenefits(info['benefit']), 2)
+        self.fund.updateLedger(self.currentYear)
         self.assets = sum(self.fund.ledger[self.currentYear])
 
         # instability represents proximity to hypothesised equilibrium.
