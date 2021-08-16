@@ -66,13 +66,18 @@ class pensPlan(object):
         newLiability = round(self.population.calculateTotalLiability(), 2)
         normalCost = (newLiability - self.liability)
         self.liability = newLiability
-
-        contribution = self.pr * normalCost
-        self.fund.addPremiums(contribution)
-
-        self.payGo = round(self.fund.payBenefits(info['benefit']), 2)
         self.totalPay = round(self.population.calculateTotalSalary(), 2)
 
+        [r, A] = self.fund.addInvestmentEarnings()
+        contribution = self.pr * normalCost
+        self.fund.addPremiums(contribution)
+        self.payGo = round(self.fund.payBenefits(info['benefit']), 2)
+        self.assets = sum(self.fund.ledger[self.currentYear])
+
+        # instability represents proximity to hypothesised equilibrium.
+        self.instability = (contribution + self.discountRate*self.liability) - (r*A + normalCost)
+
+        # Calculate Contribution Rate.
         if popGrowth != 0:
             self.cr = (normalCost + self.payGo) / (self.totalPay * popGrowth)
         else:
@@ -81,9 +86,7 @@ class pensPlan(object):
             except ZeroDivisionError:
                 self.cr = 0.0
 
-        self.fund.addInvestmentEarnings(self.currentYear)
-        self.assets = sum(self.fund.ledger[self.currentYear])
-        returns = self.assets - old_assets
+        # Calculate new UAL and growth rate.
         newUAL = max((self.liability - self.assets - self.payGo), 0)
         try:
             self.growthRate = (newUAL - self.ual) * 100 / self.ual
@@ -91,14 +94,9 @@ class pensPlan(object):
             if newUAL != 0:
                 self.growthRate = newUal * 100 / self.liability
             else:
-                self.growthRate = 0
+                self.growthRate = 0.0
         self.growthRate = round(self.growthRate, 2)
         self.ual = newUAL
-
-        # contribution = premiumRate * normalCost
-        # returns = change in assets
-        # self.instability represents proximity to hypothesised equilibrium.
-        self.instability = (contribution + self.discountRate*self.liability) - (returns + normalCost)
 
     def adjustEmployment(self, N):
         """Adjust employment up or down."""
