@@ -18,6 +18,7 @@ class pensPlan(object):
         self.totalPay = 0
         self.pr = premiumRate
         self.instability = 1
+        self.r = 0
 
         self.discountRate = discountRate
 
@@ -69,6 +70,7 @@ class pensPlan(object):
         self.totalPay = round(self.population.calculateTotalSalary(), 2)
 
         [r, A] = self.fund.addInvestmentEarnings()
+        self.r = round(r*100, 2)
         contribution = self.pr * normalCost
         self.fund.addPremiums(contribution)
         self.payGo = round(self.fund.payBenefits(info['benefit']), 2)
@@ -124,6 +126,7 @@ def runModel(volatility, employmentGrowth=1.0, discountRate=0.07, funds=0.75, pr
     d["payGo"] = [p.payGo]
     d["Total Salary"] = [p.totalPay]
     d["Instability"] = [round(p.instability)]
+    d["Investment Returns(%)"] = [p.r]
 
     # Run model for several years, saving data along the way
     for year in range(years):
@@ -139,6 +142,7 @@ def runModel(volatility, employmentGrowth=1.0, discountRate=0.07, funds=0.75, pr
         d["payGo"].append(p.payGo)
         d["Total Salary"].append(p.totalPay)
         d["Instability"].append(round(p.instability))
+        d["Investment Returns(%)"].append(p.r)
 
     # Stops here if you're not trying to save the data visualization.
     if not saveFiles:
@@ -245,7 +249,7 @@ def getModelData(volatility,
     # Find the mean values across all runs and visualize them, to see overall shape of the data w/ the given parameters.
     mean_data = {"UAL": [], "Assets": [], "Liability": [], "UAL Growth(%)": [], "Active Members": [],
                  "Retired Members": [], "Avg. Service": [], "Contribution Rate": [], "payGo": [],
-                 "Total Salary": [], "Instability": []}
+                 "Total Salary": [], "Instability": [], "Investment Returns(%)": []}
     for i in range(years):
         for key in mean_data:
             m = [run[key][i] for run in model_data]
