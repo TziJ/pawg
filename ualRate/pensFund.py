@@ -69,13 +69,15 @@ class pensFund(object):
             self.other -= (self.other / total) * benefits
         return self.payGo()
 
-    def addInvestmentEarnings(self, year):
+    def addInvestmentEarnings(self):
         e = np.random.normal(self.vol[0], self.vol[1])
         b = np.random.normal(self.vol[2], self.vol[3])
         o = np.random.normal(self.vol[4], self.vol[5])
         # defaults: [0.06, 0.03, 0.04, 0.01, 0.06, 0.05]
 
         # print("Investment Earnings amount to $%s" % '{:,}'.format(round(earnings, 2)))
+
+        A = self.equity + self.bonds + self.other
 
         self.equity *= (1 + e)
         self.bonds *= (1 + b)
@@ -85,6 +87,11 @@ class pensFund(object):
         self.bonds = round(self.bonds, 2)
         self.other = round(self.other, 2)
 
+        newA = self.equity + self.bonds + self.other
+        r = (newA-A)/A
+        return [r, A]
+
+    def updateLedger(self, year):
         self.currentYear = year
         self.ledger[self.currentYear] = [self.equity, self.bonds, self.other]
 
