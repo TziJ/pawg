@@ -334,13 +334,13 @@ class pensMember(object):
 class pensPop(object):
     def __init__(self, members=[], discountRate=0.07, tables=None):
         # A list of member objects.
+        self.tables = tables
         self.members = members
         self.startingSalary = 50000
         self.avgAge = 30
         self.sampleSize = 100
         self.simulatePopulation()
         self.discount = 1 + discountRate
-        self.tables = tables
 
     def simulateMembers(
             self,
