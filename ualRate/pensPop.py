@@ -85,18 +85,20 @@ class pensMort:
 
 class pensMember(object):
     def __init__(
-        self,
-        age,
-        sex,
-        service,
-        salary,
-        currentYear,
-        mortalityClass="General",
-        tier="1",
-        status="active",
-        id="*",
+            self,
+            age,
+            sex,
+            service,
+            salary,
+            currentYear,
+            mortalityClass="General",
+            tier="1",
+            status="active",
+            id="*",
+            tables=None
     ):
         self.age = age
+        self.tables = tables
         self.sex = sex
         self.salary = salary
         self.mortalityClass = mortalityClass
@@ -127,10 +129,10 @@ class pensMember(object):
 
         if self.service > 1:
             for iyear in range(
-                self.currentYear - 1, self.currentYear - self.service, -1
+                    self.currentYear - 1, self.currentYear - self.service, -1
             ):
                 self.yearSalaryDict[year] = (
-                    self.salaryHistory[0] / self.projectSalaryDelta()
+                        self.salaryHistory[0] / self.projectSalaryDelta()
                 )
                 year = year - 1
 
@@ -203,17 +205,17 @@ class pensMember(object):
     def doesMemberRetire(self):
         """TBD: What it sounds like"""
         if (
-            self.status == "retired"
-            or self.status == "deceased"
-            or self.status == "disabled"
+                self.status == "retired"
+                or self.status == "deceased"
+                or self.status == "disabled"
         ):
             return False
 
         if self.age >= 62 and self.service >= 15:
             if (
-                (self.age == 62 and random.random() > 0.4)
-                or (self.age > 62 and self.age < 70 and random.random() > 0.5)
-                or (self.age >= 70)
+                    (self.age == 62 and random.random() > 0.4)
+                    or (self.age > 62 and self.age < 70 and random.random() > 0.5)
+                    or (self.age >= 70)
             ):
                 return True
             elif self.service >= 20:
@@ -241,17 +243,25 @@ class pensMember(object):
 
     def getMortTable(self):
         """determine with mortality dictionary to use based on pensMember sex and mortality class"""
-        if self.sex == "F":
-            if self.mortalityClass == "General":
-                self.mortDict = pensMort("F", "General").mortTable
-            if self.mortalityClass == "Safety":
-                self.mortDict = pensMort("F", "Safety").mortTable
+        if self.tables is None:
+            if self.sex == "F":
+                if self.mortalityClass == "General":
+                    self.mortDict = pensMort("F", "General").mortTable
+                if self.mortalityClass == "Safety":
+                    self.mortDict = pensMort("F", "Safety").mortTable
 
-        elif self.sex == "M":
-            if self.mortalityClass == "General":
-                self.mortDict = pensMort("M", "General").mortTable
+            elif self.sex == "M":
+                if self.mortalityClass == "General":
+                    self.mortDict = pensMort("M", "General").mortTable
+                if self.mortalityClass == "Safety":
+                    self.mortDict = pensMort("M", "Safety").mortTable
+        else:
+            index = 0
+            if self.sex == "M":
+                index += 2
             if self.mortalityClass == "Safety":
-                self.mortDict = pensMort("M", "Safety").mortTable
+                index += 1
+            self.mortDict = self.tables[index]
 
     def doesMemberDie(self):
         """TBD: Check if member dies"""
@@ -322,7 +332,7 @@ class pensMember(object):
 
 
 class pensPop(object):
-    def __init__(self, members=[], discountRate=0.07):
+    def __init__(self, members=[], discountRate=0.07, tables=None):
         # A list of member objects.
         self.members = members
         self.startingSalary = 50000
@@ -330,17 +340,18 @@ class pensPop(object):
         self.sampleSize = 100
         self.simulatePopulation()
         self.discount = 1 + discountRate
+        self.tables = tables
 
     def simulateMembers(
-        self,
-        N,
-        ageRange,
-        serviceRange,
-        avgSalary,
-        sex="*",
-        mortalityClass="General",
-        tier="1",
-        status="active",
+            self,
+            N,
+            ageRange,
+            serviceRange,
+            avgSalary,
+            sex="*",
+            mortalityClass="General",
+            tier="1",
+            status="active",
     ):
         """Generates N member objects with randomly distributed ages and
         services.  Sex is random, too, unless it's specified."""
@@ -364,6 +375,7 @@ class pensPop(object):
                     mortalityClass=mortalityClass,
                     tier=tier,
                     status=status,
+                    tables=self.tables
                 )
             )
 
@@ -376,9 +388,9 @@ class pensPop(object):
             salary = 51000 + serviceYears * 1600 + np.random.normal(0, 2500)
         elif serviceYears <= 25:
             salary = (
-                self.estimateSalary(15)
-                + (serviceYears - 15) * 800
-                + np.random.normal(0, 2500)
+                    self.estimateSalary(15)
+                    + (serviceYears - 15) * 800
+                    + np.random.normal(0, 2500)
             )
         else:
             salary = self.estimateSalary(25) + (serviceYears - 25) * np.random.normal(
@@ -512,7 +524,6 @@ class pensPop(object):
         age_upper = 65
 
         for i in range(10):
-
             self.members.extend(
                 self.simulateMembers(
                     round(
@@ -568,14 +579,14 @@ class pensPop(object):
         )
 
     def addNewMembers(
-        self,
-        N,
-        ageRange,
-        serviceRange,
-        avgSalary,
-        sex="*",
-        mortalityClass="General",
-        tier="1",
+            self,
+            N,
+            ageRange,
+            serviceRange,
+            avgSalary,
+            sex="*",
+            mortalityClass="General",
+            tier="1",
     ):
         """TBD: New hires who aren't replacements."""
 
@@ -643,7 +654,7 @@ class pensPop(object):
             ## Step 4: Apply the discount rate for each of the years to
             ## get the present value in the current year.
             liabilityPresentValue = liabilityPresentValue + (liability) / (
-                discountrate ** i
+                    discountrate ** i
             )
         return liabilityPresentValue
 
@@ -701,6 +712,7 @@ if __name__ == "__main__":
                 counter += 1
         print(counter)  ## ET: should be around 60000
 
+
     def testdoesMemberSeparate():
         counter = 0
         for i in range(100000):
@@ -708,6 +720,7 @@ if __name__ == "__main__":
             if andy.doesMemberSeparate():
                 counter += 1
         print(counter)  ## ET: should be around 600
+
 
     def testdoesMemberDie():
         counter = 0
@@ -717,6 +730,7 @@ if __name__ == "__main__":
                 counter += 1
         print(counter)  ## ET: should be around 30
 
+
     def testcalculateLiability():
         x = pensPop()
         andy = pensMember(20, "M", 15, 1000, 2005)
@@ -725,14 +739,17 @@ if __name__ == "__main__":
         andy.ageOneYear()
         print(x.calculateLiability(andy))
 
+
     def testcalculateTotalLiability():
         x = pensPop()
         x.advanceOneYear()
         print(x.calculateTotalLiability())
 
+
     def testgetAnnualReport():
         x = pensPop()
         print(x.getAnnualReport())
+
 
     def testAgeOneYear():
         m1 = pensMember(20, "M", 2, 500, 2010)
@@ -746,10 +763,12 @@ if __name__ == "__main__":
         print(m2_ageOneYear.age)
         print(m3_ageOneYear.service)
 
+
     def testAdvanceOneYear():
         x = pensPop()
         for i in range(10):
             print(x.advanceOneYear())
+
 
     def testSimulatePopulation():
         total_retired = 270835
@@ -772,9 +791,11 @@ if __name__ == "__main__":
         plt.plot(counter)
         plt.show()
 
+
     def testCalculateTotalSalary():
         x = pensPop()
         print(x.calculateTotalSalary())
+
 
     # testdoesMemberRetire()
     # testcalculateLiability()
@@ -783,6 +804,6 @@ if __name__ == "__main__":
     # testAgeOneYear()
     # testcalculateTotalLiability()
     # testCalculateTotalSalary()
-    testSimulatePopulation()
+    #testSimulatePopulation()
     # testSimulatePopulation()
     # testAdvanceOneYear()
