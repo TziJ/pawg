@@ -76,7 +76,10 @@ class pensPlan(object):
         if popGrowth != 0:
             self.cr = (normalCost + self.payGo) / (self.totalPay * popGrowth)
         else:
-            self.cr = (normalCost + self.payGo) / self.totalPay
+            try:
+                self.cr = (normalCost + self.payGo) / self.totalPay
+            except ZeroDivisionError:
+                self.cr = 0.0
 
         self.fund.addInvestmentEarnings(self.currentYear)
         self.assets = sum(self.fund.ledger[self.currentYear])
@@ -223,7 +226,8 @@ def getModelData(volatility,
     model_data = []
 
     #Print for checking progress
-    print("%s: Running models" % filename, end="...")
+    print("%s:" % filename)
+    print("\tRunning models...")
 
     for i in range(size):
         # Run the model, then append the resulting dictionary to the list.
@@ -237,7 +241,7 @@ def getModelData(volatility,
             print("\nAn error occurred while running models.\n%s out of %s models completed." % (str(i), str(size)))
             raise
 
-    print("complete! Averaging data", end="...")
+    print("\tcomplete! Averaging data...")
 
     # Find the mean values across all runs and visualize them, to see overall shape of the data w/ the given parameters.
     mean_data = {"UAL": [], "Assets": [], "Liability": [], "UAL Growth(%)": [], "Active Members": [],
@@ -252,7 +256,7 @@ def getModelData(volatility,
                 mean = round(stats.mean(m), 2)
             mean_data[key].append(mean)
 
-    print("complete!")
+    print("\tcomplete!")
     # Convert dictionary data into a DataFrame, used to create the graph.
     df = pd.DataFrame(data=mean_data, index=range(2000, (2000 + years)))
     csv_directory = "Graphs/%s/%s.csv" % (folder, filename)
