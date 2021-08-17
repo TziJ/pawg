@@ -95,7 +95,7 @@ class pensPlan(object):
             self.growthRate = (newUAL - self.ual) * 100 / self.ual
         except ZeroDivisionError:
             if newUAL != 0:
-                self.growthRate = newUal * 100 / self.liability
+                self.growthRate = newUAL * 100 / self.liability
             else:
                 self.growthRate = 0.0
         self.growthRate = round(self.growthRate, 2)
