@@ -88,7 +88,10 @@ class pensFund(object):
         self.other = round(self.other, 2)
 
         newA = self.equity + self.bonds + self.other
-        r = (newA-A)/A
+        try:
+            r = (newA-A)/A
+        except ZeroDivisionError:
+            r = 0.0
         return [r, A]
 
     def updateLedger(self, year):
